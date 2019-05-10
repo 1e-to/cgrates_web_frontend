@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import QueryControllerMixin from 'cgrates-web-frontend/mixins/query-controller-mixin';
+import { task } from 'ember-concurrency';
 
 export default Controller.extend(QueryControllerMixin, {
   queryParams: Object.freeze(['rate', 'supplierName', 'prefix', 'insertedAtGt', 'insertedAtLt', 'page', 'pageSize']),
@@ -12,14 +13,14 @@ export default Controller.extend(QueryControllerMixin, {
   permittedFilters: Object.freeze([
     'rate', 'supplierName', 'prefix', 'insertedAtGt', 'insertedAtLt'
   ]),
-
-  actions: {
-    resolve() {
-      this.store
-        .createRecord('raw-supplier-resolve-job', {tpid: this.get('tariffPlan.id')})
-        .save()
-        .then(()  => { this.get('flashMessages').success('Resolve job is starting'); })
-        .catch(() => { this.get('flashMessages').danger('Somethings went wrong'); });
-    }
-  },
+ 
+  resolve: task(function * () {
+    try {
+      yield store.createRecord('raw-supplier-resolve-job', {tpid: this.get('tariffPlan.id')})
+      yield store.save()
+      this.get('flashMessages').success('Resolve job is starting'); 
+    } catch (e) { 
+      this.get('flashMessages').danger('Somethings went wrong'); 
+    }      
+  }),
 });
