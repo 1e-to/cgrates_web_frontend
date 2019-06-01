@@ -24,3 +24,4 @@ export default Controller.extend(QueryControllerMixin, {
     }      
   }),
 });
+
